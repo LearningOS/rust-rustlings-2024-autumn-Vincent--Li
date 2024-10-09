@@ -6,6 +6,7 @@
 //I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
+use std::vec;
 
 
 #[derive(Debug)]
@@ -50,13 +51,29 @@ where
 
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        match &mut self.root {
+            None => self.root = Some(Box::new(TreeNode::<T>::new(value))),
+            Some(node) => {
+               node.insert(value);
+            }
+        }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
+        match self.root {
+            None => false,
+            Some(node) => {
+                // put root into queue
+                let mut queue = vec![];
+
+                while let current_node = queue.pop() {
+                    if current_node.value
+                }
+                // compare value if equal return true
+                // if false, judge has left or right child , put them into the queue
+            }
+        }
     }
 }
 
@@ -66,7 +83,30 @@ where
 {
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
-        //TODO
+        match value < self.value {
+            true => {
+                // value goes to left tree
+                match &mut self.left {
+                    None => {
+                        self.left = Some(Box::new(TreeNode::<T>::new(value)));
+                    }
+                    Some(left_child) => {
+                        left_child.insert(value);
+                    }
+                }
+            }
+            false => {
+                // value goes to right tree
+                match &mut self.right {
+                    None => {
+                        self.right = Some(Box::new(TreeNode::<T>::new(value)));
+                    }
+                    Some(right_child) => {
+                        right_child.insert(value);
+                    }
+                }
+            }
+        }
     }
 }
 
