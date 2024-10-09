@@ -2,11 +2,8 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -29,13 +26,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: std::cmp::PartialOrd + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: std::cmp::PartialOrd + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -56,11 +53,11 @@ impl<T> LinkedList<T> {
         self.length += 1;
     }
 
-    pub fn get(&mut self, index: i32) -> Option<&T> {
+    pub fn get(&self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
 
-    fn get_ith_node(&mut self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
+    fn get_ith_node(&self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
         match node {
             None => None,
             Some(next_ptr) => match index {
@@ -79,18 +76,38 @@ impl<T> LinkedList<T> {
             return list_a;
         }
 
-        let mut a_ptr = &list_a;
-        let mut b_ptr = &list_b;
-        let mut result = LinkedList<T>::new();
+        let mut result = LinkedList::<T>::new();
+        let mut idx_a = 0;
+        let mut idx_b = 0;
 
         
         loop {
-
-            if list_a.length == 0 || list_b.length == 0 {
-                break;
+            match ( list_a.get(idx_a), list_b.get(idx_b)) {
+                (None, None) => break,
+                (Some(a), None) => {
+                    result.add(a.clone());
+                    idx_a = idx_a + 1;
+                }
+                (None, Some(b)) => {
+                    result.add(b.clone());
+                    idx_b = idx_b + 1;
+                }
+                (Some(a), Some(b)) => {
+                    match a >= b {
+                        true => {
+                            result.add(b.clone());
+                            idx_b = idx_b + 1;
+                        }
+                        false => {
+                            result.add(a.clone());
+                            idx_a = idx_a + 1;
+                        }
+                    }
+                }
             }
         }
 
+        result
         
 	}
 }
