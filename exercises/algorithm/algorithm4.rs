@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::vec;
@@ -61,19 +60,33 @@ where
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        match self.root {
-            None => false,
+        let mut result = false;
+        match &self.root {
+            None => result = false,
             Some(node) => {
                 // put root into queue
-                let mut queue = vec![];
+                let mut queue: Vec<&Box<TreeNode<T>>> = vec![];
+                queue.push(node);
 
-                while let current_node = queue.pop() {
-                    if current_node.value
+                while let Some(current_node) = queue.pop() {
+                    if current_node.value == value {
+                        result = true
+                    }
+
+                    // compare value if equal return true
+                    // if false, judge has left or right child , put them into the queue
+                    if let Some(ref left_child) = current_node.left {
+                        queue.push(left_child);
+                    }
+
+                    if let Some(ref right_child) = current_node.right {
+                        queue.push(right_child);
+                    } 
+  
                 }
-                // compare value if equal return true
-                // if false, judge has left or right child , put them into the queue
             }
         }
+        result
     }
 }
 
@@ -83,6 +96,9 @@ where
 {
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
+        if value == self .value {
+            return
+        }
         match value < self.value {
             true => {
                 // value goes to left tree
