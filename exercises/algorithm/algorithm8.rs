@@ -2,9 +2,10 @@
 	queue
 	This question requires you to use queues to implement the functionality of the stac
 */
-// I AM NOT DONE
 
-#[derive(Debug)]
+use std::cell::RefCell;
+
+#[derive(Debug, Clone)]
 pub struct Queue<T> {
     elements: Vec<T>,
 }
@@ -54,28 +55,55 @@ impl<T> Default for Queue<T> {
 
 pub struct myStack<T>
 {
-	//TODO
-	q1:Queue<T>,
-	q2:Queue<T>
+	q1: RefCell<Queue<T>>,
+	q2: RefCell<Queue<T>>
 }
-impl<T> myStack<T> {
+impl<T: Clone + Copy> myStack<T> {
     pub fn new() -> Self {
         Self {
-			//TODO
-			q1:Queue::<T>::new(),
-			q2:Queue::<T>::new()
+			q1: RefCell::new(Queue::<T>::new()),
+			q2: RefCell::new(Queue::<T>::new()),
         }
     }
     pub fn push(&mut self, elem: T) {
-        //TODO
+        self.q1.borrow_mut().enqueue(elem);
     }
-    pub fn pop(&mut self) -> Result<T, &str> {
-        //TODO
-		Err("Stack is empty")
+    pub fn pop(&self) -> Result<T, &str> {
+        if self.is_empty() {
+            return Err("Stack is empty");
+        }
+        // use q2 as an aid queue for moving elements
+        let q1 = &self.q1;
+        let q2 = &self.q2;
+        
+        // move first n -1 elements to q2
+        let q1_size = q1.borrow().size();
+        for _i in 0..(q1_size - 1) {
+            let mut queue = q1.borrow_mut();
+            match queue.dequeue() {
+                Ok(value) => q2.borrow_mut().enqueue(value),
+                Err(_) => ()
+            }
+            
+        }
+
+        // move q2's elements back to q1
+        let q2_size = q2.borrow().size();
+        for _i in 0..q2_size {
+            let mut queue = q2.borrow_mut();
+            match queue.dequeue() {
+                Ok(value) => q1.borrow_mut().enqueue(value),
+                Err(_) => ()
+            }
+        }
+
+        match q1.borrow_mut().dequeue() {
+            Ok(value) => return Ok(value),
+            Err(_) => return Err("Stack is empty")
+        }
     }
     pub fn is_empty(&self) -> bool {
-		//TODO
-        true
+        self.q1.borrow().is_empty()
     }
 }
 
