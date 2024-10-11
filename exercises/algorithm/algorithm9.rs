@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -11,19 +10,21 @@ pub struct Heap<T>
 where
     T: Default,
 {
+    min: bool,
     count: usize,
     items: Vec<T>,
     comparator: fn(&T, &T) -> bool,
 }
 
-impl<T> Heap<T>
+impl<T: Ord> Heap<T>
 where
     T: Default,
 {
-    pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
+    pub fn new(comparator: fn(&T, &T) -> bool, min: bool) -> Self {
         Self {
+            min,
             count: 0,
-            items: vec![T::default()],
+            items: vec![],
             comparator,
         }
     }
@@ -37,7 +38,51 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        let mut index = self.items.len() - 1 ;
+        match self.min {
+            true => {
+                println!("goes to minHeap");
+                while index > 0 {
+                    let parent_idx: usize = self.parent_idx(index);
+                    
+                    match (self.comparator)(&self.items[index], &self.items[parent_idx]) {
+                        true => {
+                            println!("minHeap index: {}  parent_idx: {}  ",
+                        index,  parent_idx
+                    );
+                            self.items.swap(index, parent_idx);
+                            index = parent_idx;
+                        }
+                        false => {
+                            println!("doesn't exchange");
+                            break;
+                        }
+                    }
+                }
+            }
+            false => {
+                while index > 0 {
+                    let parent_idx: usize = self.parent_idx(index);
+                    
+                    match (self.comparator)(&self.items[index], &self.items[parent_idx]) {
+                        true => {
+                            println!("maxHeap index: {}  parent_idx: {}  ",
+                                index,  parent_idx
+                            );
+                            self.items.swap(index, parent_idx);
+                            index = parent_idx;
+                        }
+                        false => {
+                            println!("doesn't exchange");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        self.count += 1;
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -68,24 +113,85 @@ where
 {
     /// Create a new MinHeap
     pub fn new_min() -> Self {
-        Self::new(|a, b| a < b)
+        Self::new(|a, b| a < b, true)
     }
 
     /// Create a new MaxHeap
     pub fn new_max() -> Self {
-        Self::new(|a, b| a > b)
+        Self::new(|a, b| a > b, false)
     }
 }
 
-impl<T> Iterator for Heap<T>
+impl<T: Ord> Iterator for Heap<T>
 where
     T: Default,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.items.len() == 0 {
+            return None;
+        }
+		let item = self.items.remove(0);
+        
+        // shift down, swap last to top, and compare until satisfy the heap property
+        let len = self.items.len() - 1;
+        self.items.swap(0, len);
+        let mut index = 0;
+        
+        match self.min {
+            true => {
+                println!("goes to minHeap next");
+                loop {
+                    let left_child = 2 * index +1;
+                    let right_child = 2 * index + 2;
+                    let len = self.items.len();
+                    
+                    let mut smallest = if left_child < len && self.items[left_child] < self.items[index] {
+                        left_child
+                    } else {
+                        index
+                    };
+                    if right_child < len && self.items[right_child] < self.items[smallest] {
+                        smallest = right_child;
+                    }
+
+                    if smallest != index {
+                        self.items.swap(index, smallest);
+                        index = smallest;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            false => {
+                println!("goes to maxHeap next");
+                loop {
+                    let left_child = 2 * index +1;
+                    let right_child = 2 * index + 2;
+                    let len = self.items.len();
+                    
+                    let mut biggest = if left_child < len && self.items[left_child] > self.items[index] {
+                        left_child
+                    } else {
+                        index
+                    };
+                    if right_child < len && self.items[right_child] > self.items[biggest] {
+                        biggest = right_child;
+                    }
+
+                    if biggest != index {
+                        self.items.swap(index, biggest);
+                        index = biggest;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        
+        self.count -= 1;
+        return Some(item);
     }
 }
 
@@ -97,7 +203,7 @@ impl MinHeap {
     where
         T: Default + Ord,
     {
-        Heap::new(|a, b| a < b)
+        Heap::new(|a, b| a < b, true)
     }
 }
 
@@ -109,7 +215,7 @@ impl MaxHeap {
     where
         T: Default + Ord,
     {
-        Heap::new(|a, b| a > b)
+        Heap::new(|a, b| a > b, false)
     }
 }
 
